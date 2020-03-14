@@ -1,4 +1,4 @@
-	call plug#begin()
+call plug#begin()
 	Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 	Plug 'rhysd/clever-f.vim'
 	Plug 'junegunn/goyo.vim'
@@ -9,17 +9,19 @@
 	Plug 'omnisharp/omnisharp-vim', { 'do': 'cd server && xbuild' }
 	Plug 'OrangeT/vim-csharp'
 	Plug 'rhysd/vim-clang-format'
-"	Plug 'universal-ctags/ctags'
-"	Plug 'xolox/vim-easytags'
-"	Plug 'xolox/vim-misc'
-"	Plug 'ludovicchabant/vim-gutentags'
 	Plug 'lervag/vimtex'
  	Plug 'vim-airline/vim-airline'
 	Plug '/usr/local/opt/fzf'
 	Plug 'junegunn/fzf.vim'
 	Plug 'stevearc/vim-arduino'
 	Plug 'LucHermitte/mu-template'
+        "Plug 'arzg/vim-colors-xcode'
+        Plug 'nickaroot/vim-xcode-dark-theme'
+        "Plug 'octol/vim-cpp-enhanced-highlight'
+"        Plug 'arakashic/chromatica.nvim'
 call plug#end()
+
+
 let g:OmniSharp_server_stdio = 1
 let g:OmniSharp_server_use_mono = 1
 set relativenumber 
@@ -73,8 +75,14 @@ autocmd FileType tex call OnLatexFile()
 function! OnCPPFile()
 	nnoremap <Space>mc :w<CR> :!cmake .<CR> :!make<CR>
 	nnoremap <Space>mf :ClangFormat<CR>
+        nnoremap <Space>ms :w<CR> :CocCommand clangd.switchSourceHeader<CR>
 	let g:clang_format#code_style = "llvm"
 	let g:detect_style_file = 1
+        nn <silent> K :call CocActionAsync('doHover')<cr>
+        set updatetime=300
+        au CursorHold * sil call CocActionAsync('highlight')
+        au CursorHoldI * sil call CocActionAsync('showSignatureHelp')
+"        au CursorHoldI * sil CocCommand clangd.symbolInfo
 "	call clang_format#enable_format_on_insert()
 "	call clang_format#enable_auto_format()
 	abbreviate cincludes #include <stdio.h>
@@ -187,22 +195,22 @@ let g:fzf_colors =
 let g:fzf_history_dir = '~/.local/share/fzf-history'
 let NERDTreeMapOpenInTab='<ENTER>'
 
-let g:easytags_cmd = '/usr/local/bin/ctags'
-let g:easytags_languages = {
-\   'c++': {
-\     'cmd': g:easytags_cmd,
-\	    'args': [],
-\	    'fileoutput_opt': '-f',
-\	    'stdout_opt': '-f-',
-\	    'recurse_flag': '-R'
-\   }
-\}
 
 
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
+nmap <Space>r <Plug>(coc-rename)
 
 " Use K to show documentation in preview window
 nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+
+colorscheme xcode_dark
+
+"let g:chromatica#libclang_path='/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
+
