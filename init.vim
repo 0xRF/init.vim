@@ -11,14 +11,12 @@ call plug#begin()
 	Plug 'rhysd/vim-clang-format'
 	Plug 'lervag/vimtex'
  	Plug 'vim-airline/vim-airline'
-	Plug '/usr/local/opt/fzf'
-	Plug 'junegunn/fzf.vim'
+        Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 	Plug 'stevearc/vim-arduino'
 	Plug 'LucHermitte/mu-template'
-        "Plug 'arzg/vim-colors-xcode'
         Plug 'nickaroot/vim-xcode-dark-theme'
-        "Plug 'octol/vim-cpp-enhanced-highlight'
-"        Plug 'arakashic/chromatica.nvim'
+        Plug 'rbgrouleff/bclose.vim'
+        Plug 'francoiscabrol/ranger.vim'
 call plug#end()
 
 
@@ -37,16 +35,19 @@ nnoremap <Space>wj <C-W><C-J>
 nnoremap <Space>wk <C-W><C-K>
 nnoremap <Space>wl <C-W><C-L>
 noremap  <Space>wc :Goyo<CR>
-
+     
+let g:ranger_map_keys = 0
+let g:ranger_replace_netrw = 1 
 "File Menu
-nnoremap <Space>ft :NERDTreeToggle<CR>
+nnoremap <Space>ft :RangerWorkingDirectory<CR>
+"nnoremap <Space>ft :NERDTreeToggle<CR>
 nnoremap <Space>fs :w <CR>
 
 "Normal Mappings
 nnoremap <Bslash>j o<ESC>
 nnoremap <Bslash>k O<ESC>
 noremap <Tab> i<Tab><ESC>
-noremap <Space><Tab> :tabNext<CR>
+"noremap <Space><Tab> :tabNext<CR>
 noremap <C-]> <C-]>zt
 noremap <Space>bb :Buffers<CR>
 noremap <S-Tab> :bdelete<CR>
@@ -214,3 +215,46 @@ colorscheme xcode_dark
 
 "let g:chromatica#libclang_path='/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
 
+
+function! s:buflist()
+  redir => ls
+  silent ls
+  redir END
+  return split(ls, '\n')
+endfunction
+
+function! s:bufopen(e)
+  execute 'buffer' matchstr(a:e, '^[ 0-9]*')
+endfunction
+
+nnoremap <silent> <Space><Tab> :call fzf#run({
+\   'source':  reverse(<sid>buflist()),
+\   'sink':    function('<sid>bufopen'),
+\   'options': '+m',
+\   'down':    len(<sid>buflist()) + 2
+\ })<CR>
+
+
+function! s:line_handler(l)
+  let keys = split(a:l, ':\t')
+  exec 'buf' keys[0]
+  exec keys[1]
+  normal! ^zz
+endfunction
+
+function! s:buffer_lines()
+  let res = []
+  for b in filter(range(1, bufnr('$')), 'buflisted(v:val)')
+    call extend(res, map(getbufline(b,0,"$"), 'b . ":\t" . (v:key + 1) . ":\t" . v:val '))
+  endfor
+  return res
+endfunction
+
+command! FZFLines call fzf#run({
+\   'source':  <sid>buffer_lines(),
+\   'sink':    function('<sid>line_handler'),
+\   'options': '--extended --nth=3..',
+\   'down':    '60%'
+\})
+
+noremap <Space>ss :FZFLines<CR>
